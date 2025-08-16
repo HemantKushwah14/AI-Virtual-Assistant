@@ -92,26 +92,22 @@ synth.speak(utterence);
 
 useEffect(() => {
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  
-  // Check if speech recognition is supported
   if (!SpeechRecognition) {
     console.log("Speech recognition not supported in this browser");
     return;
   }
-  
-  const recognition = new SpeechRecognition();
 
+  const recognition = new SpeechRecognition();
   recognition.continuous = true;
   recognition.lang = 'en-US';
   recognition.interimResults = false;
-
   recognitionRef.current = recognition;
 
-  let isMounted = true;  // flag to avoid setState on unmounted component
+  let isMounted = true;
+  let stopPermanently = false; // 🚨 new flag
 
-  // Start recognition after 1 second delay only if component still mounted
   const startTimeout = setTimeout(() => {
-    if (isMounted && !isSpeakingRef.current && !isRecognizingRef.current) {
+    if (isMounted && !isSpeakingRef.current && !isRecognizingRef.current && !stopPermanently) {
       try {
         recognition.start();
         console.log("Recognition requested to start");
@@ -131,9 +127,11 @@ useEffect(() => {
   recognition.onend = () => {
     isRecognizingRef.current = false;
     setListening(false);
-    if (isMounted && !isSpeakingRef.current) {
+
+    // ✅ only restart if not stopped permanently
+    if (isMounted && !isSpeakingRef.current && !stopPermanently) {
       setTimeout(() => {
-        if (isMounted) {
+        if (isMounted && !stopPermanently) {
           try {
             recognition.start();
             console.log("Recognition restarted");
@@ -149,17 +147,17 @@ useEffect(() => {
     console.warn("Recognition error:", event.error);
     isRecognizingRef.current = false;
     setListening(false);
-    
-    // Don't restart for certain error types that indicate permanent issues
-    if (event.error === "network" || event.error === "not-allowed" || event.error === "service-not-allowed") {
+
+    if (["network", "not-allowed", "service-not-allowed"].includes(event.error)) {
       console.log("Stopping recognition due to permanent error:", event.error);
+      stopPermanently = true; // 🚨 prevent further restarts
+      recognition.stop();
       return;
     }
-    
-    // Only restart for temporary errors
-    if (event.error !== "aborted" && isMounted && !isSpeakingRef.current) {
+
+    if (event.error !== "aborted" && isMounted && !isSpeakingRef.current && !stopPermanently) {
       setTimeout(() => {
-        if (isMounted) {
+        if (isMounted && !stopPermanently) {
           try {
             recognition.start();
             console.log("Recognition restarted after error");
@@ -167,7 +165,7 @@ useEffect(() => {
             if (e.name !== "InvalidStateError") console.error(e);
           }
         }
-      }, 2000); // Increased delay to prevent rapid restarts
+      }, 2000);
     }
   };
 
