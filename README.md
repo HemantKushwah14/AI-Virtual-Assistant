@@ -1,3 +1,9 @@
+<img width="1852" height="978" alt="Screenshot 2025-10-17 193117" src="https://github.com/user-attachments/assets/5518d5a8-c046-4bec-aadb-9980ddf6bc9f" />
+
+
+
+
+
 🎯 Usage:
 
 1. Create an Account:
