@@ -1,8 +1,10 @@
+<img width="1855" height="973" alt="Screenshot 2025-10-17 192932" src="https://github.com/user-attachments/assets/6fc1ed55-bf2e-4038-affc-0b8eabee1cf7" />
+
+<img width="1855" height="973" alt="Screenshot 2025-10-17 192906" src="https://github.com/user-attachments/assets/41b57225-bc98-4f60-93f1-dc2cb11c6778" />
+
+<img width="1851" height="979" alt="Screenshot 2025-10-17 193009" src="https://github.com/user-attachments/assets/f22fd4e0-bd84-4897-be1a-522c17a9b28c" />
+
 <img width="1852" height="978" alt="Screenshot 2025-10-17 193117" src="https://github.com/user-attachments/assets/5518d5a8-c046-4bec-aadb-9980ddf6bc9f" />
-
-
-
-
 
 🎯 Usage:
 
