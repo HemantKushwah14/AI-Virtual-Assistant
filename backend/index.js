@@ -1,29 +1,63 @@
-import express from "express"
-import dotenv from "dotenv"
-dotenv.config()
-import connectDb from "./config/db.js"
-import authRouter from "./routes/auth.routes.js"
-import cors from "cors"
-import cookieParser from "cookie-parser"
-import userRouter from "./routes/user.routes.js"
-import geminiResponse from "./gemini.js"
+import "dotenv/config";
 
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-const app=express()
-app.use(cors({
-    origin:"https://ai-virtual-assistant-frontend-o0ei.onrender.com",
-    methods: "GET,POST,PUT,DELETE",
-    credentials:true
-}))
-const port=process.env.PORT || 5000
-app.use(express.json())
-app.use(cookieParser())
-app.use("/api/auth",authRouter)
-app.use("/api/user",userRouter)
+import connectDb from "./config/db.js";
 
+import authRouter from "./routes/auth.routes.js";
+import userRouter from "./routes/user.routes.js";
 
-app.listen(port,()=>{
-    connectDb()
-    console.log("server started")
-})
+const app = express();
 
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+app.use(
+    cors({
+        origin: [
+            "http://localhost:5173",
+            "https://ai-virtual-assistant-frontend-o0ei.onrender.com",
+            // your deployed frontend URL(s), comma separated, set on the hosting site
+            ...(process.env.FRONTEND_URL || "").split(",").map((u) => u.trim()).filter(Boolean)
+        ],
+        credentials: true
+    })
+);
+
+// Health check
+app.get("/", (req, res) => {
+    res.status(200).send("Server Running");
+});
+
+// Routes
+app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
+
+// Error handler (multer errors, bad JSON, etc.)
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+    console.error("Unhandled error:", err.message);
+    res.status(err.status || 400).json({ message: err.message || "Server error" });
+});
+
+// Server startup
+const PORT = process.env.PORT || 8000;
+
+const startServer = async () => {
+    try {
+        await connectDb();
+
+        app.listen(PORT, () => {
+            console.log(`Server running on port ${PORT}`);
+        });
+    } catch (error) {
+        console.error("Server startup failed:", error.message);
+        process.exit(1);
+    }
+};
+
+startServer();

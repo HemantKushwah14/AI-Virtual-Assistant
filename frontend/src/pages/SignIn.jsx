@@ -28,7 +28,7 @@ try {
   console.log(error)
   setUserData(null)
   setLoading(false)
-  setErr(error.response.data.message)
+  setErr(error.response?.data?.message || "Something went wrong. Please try again.")
 }
     }
   return (

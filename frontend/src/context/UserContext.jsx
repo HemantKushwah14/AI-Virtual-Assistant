@@ -1,73 +1,115 @@
-import axios from 'axios'
-import React, { createContext, useEffect, useState } from 'react'
-export const userDataContext=createContext()
-function UserContext({children}) {
-    const serverUrl="https://ai-virtual-assistant-backend-h2x1.onrender.com"
-    const [userData,setUserData]=useState(null)
-    const [frontendImage,setFrontendImage]=useState(null)
-     const [backendImage,setBackendImage]=useState(null)
-     const [selectedImage,setSelectedImage]=useState(null)
-    const handleCurrentUser=async ()=>{
-        // Check if logout just happened (within last 5 seconds)
-        const logoutTime = sessionStorage.getItem('logoutTime')
-        if (logoutTime && (Date.now() - parseInt(logoutTime)) < 5000) {
-            console.log("Skipping user fetch - recent logout detected")
-            setUserData(null)
-            sessionStorage.removeItem('logoutTime')
-            return
-        }
 
-        try {
-            const result=await axios.get(`${serverUrl}/api/user/current`,{withCredentials:true})
-            setUserData(result.data)
-            console.log(result.data)
-        } catch (error) {
-            console.log("Current user fetch error:", error.response?.status, error.response?.data)
-            // If there's an error (like no token), ensure userData is null
-            setUserData(null)
-        }
+import axios from "axios";
+import React, {
+  createContext,
+  useCallback,
+  useEffect,
+  useState
+} from "react";
+
+export const userDataContext = createContext();
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:8000";
+
+function UserContext({ children }) {
+  const [userData, setUserData] = useState(null);
+  const [frontendImage, setFrontendImage] = useState(null);
+  const [backendImage, setBackendImage] = useState(null);
+  const [selectedImage, setSelectedImage] = useState(null);
+
+  // GET CURRENT USER
+  const handleCurrentUser = useCallback(async () => {
+    try {
+      const result = await axios.get(
+        `${SERVER_URL}/api/user/current`,
+        { withCredentials: true }
+      );
+
+      setUserData(result.data);
+    } catch (error) {
+      console.error(
+        "Current user error:",
+        error.response?.data || error.message
+      );
+
+      setUserData(null);
+    }
+  }, []);
+
+  // GET GEMINI RESPONSE
+  const getGeminiResponse = useCallback(async (command) => {
+    try {
+      const result = await axios.post(
+        `${SERVER_URL}/api/user/asktoassistant`,
+        { command },
+        { withCredentials: true }
+      );
+
+      return result.data;
+    } catch (error) {
+      console.error(
+        "Gemini request error:",
+        error.response?.data || error.message
+      );
+
+      throw error;
+    }
+  }, []);
+
+  // LOGOUT
+  const logout = useCallback(async () => {
+    try {
+      await axios.get(
+        `${SERVER_URL}/api/auth/logout`,
+        { withCredentials: true }
+      );
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setUserData(null);
+      setFrontendImage(null);
+      setBackendImage(null);
+      setSelectedImage(null);
+
+      localStorage.removeItem("userData");
+      sessionStorage.setItem("logoutTime", Date.now().toString());
+    }
+  }, []);
+
+  useEffect(() => {
+    const logoutTime = sessionStorage.getItem("logoutTime");
+
+    if (
+      logoutTime &&
+      Date.now() - Number(logoutTime) < 5000
+    ) {
+      setUserData(null);
+      sessionStorage.removeItem("logoutTime");
+      return;
     }
 
-    const getGeminiResponse=async (command)=>{
-try {
-  const result=await axios.post(`${serverUrl}/api/user/asktoassistant`,{command},{withCredentials:true})
-  return result.data
-} catch (error) {
-  console.log(error)
-}
-    }
+    handleCurrentUser();
+  }, [handleCurrentUser]);
 
-    const logout = async () => {
-      try {
-        await axios.get(`${serverUrl}/api/auth/logout`,{withCredentials:true})
-      } catch (error) {
-        console.log("Logout error:", error)
-      } finally {
-        // Clear all state regardless of success/failure
-        setUserData(null)
-        setFrontendImage(null)
-        setBackendImage(null)
-        setSelectedImage(null)
-        // Clear any stored data in localStorage if any
-        localStorage.removeItem('userData')
-        // Prevent automatic user fetch after logout
-        sessionStorage.setItem('logoutTime', Date.now().toString())
-      }
-    }
+  const value = {
+    serverUrl: SERVER_URL,
+    userData,
+    setUserData,
+    backendImage,
+    setBackendImage,
+    frontendImage,
+    setFrontendImage,
+    selectedImage,
+    setSelectedImage,
+    getGeminiResponse,
+    logout
+  };
 
-    useEffect(()=>{
-handleCurrentUser()
-    },[])
-    const value={
-serverUrl,userData,setUserData,backendImage,setBackendImage,frontendImage,setFrontendImage,selectedImage,setSelectedImage,getGeminiResponse,logout
-    }
   return (
-    <div>
     <userDataContext.Provider value={value}>
       {children}
-      </userDataContext.Provider>
-    </div>
-  )
+    </userDataContext.Provider>
+  );
 }
 
-export default UserContext
+export default UserContext;
