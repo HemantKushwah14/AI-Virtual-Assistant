@@ -3,6 +3,9 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 
 import connectDb from "./config/db.js";
 
@@ -29,13 +32,29 @@ app.use(
 );
 
 // Health check
-app.get("/", (req, res) => {
+app.get("/api/health", (req, res) => {
     res.status(200).send("Server Running");
 });
 
 // Routes
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+
+// Serve the built frontend (frontend/dist) from this same server in production.
+// One site = login cookies work in every browser, no CORS problems.
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const frontendDist = path.join(__dirname, "..", "frontend", "dist");
+
+if (fs.existsSync(frontendDist)) {
+    app.use(express.static(frontendDist));
+    // React Router: any other GET page -> index.html
+    app.use((req, res, next) => {
+        if (req.method !== "GET" || req.path.startsWith("/api")) return next();
+        res.sendFile(path.join(frontendDist, "index.html"));
+    });
+} else {
+    app.get("/", (req, res) => res.status(200).send("Server Running"));
+}
 
 // Error handler (multer errors, bad JSON, etc.)
 // eslint-disable-next-line no-unused-vars

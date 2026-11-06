@@ -9,7 +9,10 @@ import React, {
 
 export const userDataContext = createContext();
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:8000";
+// Development: backend on localhost:8000.
+// Production build: frontend is served by the backend itself, so use the same site ("").
+const SERVER_URL =
+  import.meta.env.VITE_SERVER_URL ?? (import.meta.env.PROD ? "" : "http://localhost:8000");
 
 function UserContext({ children }) {
   const [userData, setUserData] = useState(null);
