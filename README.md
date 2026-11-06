@@ -1,3 +1,5 @@
+PROJECT LINK: https://ai-virtual-assistant-6gnt.onrender.com
+
 <img width="1855" height="973" alt="Screenshot 2025-10-17 192932" src="https://github.com/user-attachments/assets/6fc1ed55-bf2e-4038-affc-0b8eabee1cf7" />
 
 <img width="1855" height="973" alt="Screenshot 2025-10-17 192906" src="https://github.com/user-attachments/assets/41b57225-bc98-4f60-93f1-dc2cb11c6778" />
