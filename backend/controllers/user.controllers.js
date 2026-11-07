@@ -1,5 +1,5 @@
 import uploadOnCloudinary from "../config/cloudinary.js";
-import geminiResponse from "../gemini.js";
+import geminiResponse, { transcribeAudio } from "../gemini.js";
 import getFirstVideoUrl from "../youtube.js";
 import User from "../models/user.model.js";
 import moment from "moment";
@@ -171,5 +171,24 @@ export const askToAssistant = async (req, res) => {
       type: "general",
       response: message
     });
+  }
+};
+
+
+// SPEECH TO TEXT (used by browsers without built-in voice recognition)
+export const transcribe = async (req, res) => {
+  try {
+    const { audio, mimeType } = req.body || {};
+
+    if (!audio || typeof audio !== "string") {
+      return res.status(400).json({ message: "Audio is required" });
+    }
+
+    const text = await transcribeAudio(audio, mimeType || "audio/wav");
+    return res.status(200).json({ text });
+
+  } catch (error) {
+    console.error("TRANSCRIBE ERROR:", error.response?.data || error.message);
+    return res.status(500).json({ message: "Could not understand the audio. Please try again." });
   }
 };

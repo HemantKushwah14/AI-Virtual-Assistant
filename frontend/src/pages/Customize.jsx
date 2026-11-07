@@ -23,7 +23,7 @@ setBackendImage(file)
 setFrontendImage(URL.createObjectURL(file))
      }
   return (
-    <div className='w-full h-[100vh] bg-gradient-to-t from-[black] to-[#030353] flex justify-center items-center flex-col p-[20px] '>
+    <div className='w-full min-h-[100dvh] py-[30px] bg-gradient-to-t from-[black] to-[#030353] flex justify-center items-center flex-col p-[20px] '>
         <MdKeyboardBackspace className='absolute top-[30px] left-[30px] text-white cursor-pointer w-[25px] h-[25px]' onClick={()=>navigate("/")}/>
         <h1 className='text-white mb-[40px] text-[30px] text-center '>Select your <span className='text-blue-200'>Assistant Image</span></h1>
         <div className='w-full max-w-[900px] flex justify-center items-center flex-wrap gap-[15px]'>

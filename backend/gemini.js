@@ -117,7 +117,7 @@ const isRetryable = (error) => {
   );
 };
 
-const callGemini = async (prompt) => {
+const callGemini = async (parts, generationConfig = { responseMimeType: "application/json" }) => {
   const apiUrl = process.env.GEMINI_API_URL;
   const apiKey = process.env.GEMINI_API_KEY;
 
@@ -132,8 +132,8 @@ const callGemini = async (prompt) => {
         const result = await axios.post(
           url,
           {
-            contents: [{ parts: [{ text: prompt }] }],
-            generationConfig: { responseMimeType: "application/json" }
+            contents: [{ parts }],
+            generationConfig
           },
           {
             headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
@@ -197,7 +197,7 @@ Rules:
 User command: ${command}
 `;
 
-  const responseText = await callGemini(prompt);
+  const responseText = await callGemini([{ text: prompt }]);
 
   const cleaned = responseText
     .replace(/^```json\s*/i, "")
@@ -217,6 +217,33 @@ User command: ${command}
   if (!parsed.response) parsed.response = "Sorry, I didn't get that.";
 
   return parsed;
+};
+
+// ---------------------------------------------------------------------------
+// 3. Speech-to-text for browsers without built-in voice recognition
+//    (Firefox, Brave, ...). The browser records a short WAV clip and sends it here.
+// ---------------------------------------------------------------------------
+export const transcribeAudio = async (base64Audio, mimeType = "audio/wav") => {
+  let text;
+  try {
+    text = await callGemini(
+    [
+      { inline_data: { mime_type: mimeType, data: base64Audio } },
+      {
+        text:
+          "Transcribe exactly what the speaker says in this audio (English or Hinglish, " +
+          "write Hindi words in Roman letters). Return only the transcript text, nothing else. " +
+          "If nothing is said, return an empty string."
+      }
+    ],
+    { temperature: 0 }
+    );
+  } catch (error) {
+    // Silence -> Gemini returns no text. That's not an error, just nothing heard.
+    if (error.message === "Empty response from Gemini API") return "";
+    throw error;
+  }
+  return text.replace(/^["'\s]+|["'\s]+$/g, "").trim();
 };
 
 export default getGeminiResponse;

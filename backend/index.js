@@ -15,7 +15,7 @@ import userRouter from "./routes/user.routes.js";
 const app = express();
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: "10mb" })); // voice clips are sent as base64
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 

@@ -45,17 +45,17 @@ function SignUp() {
 
   return (
     <div
-      className="w-full h-[100vh] bg-cover flex justify-center items-center"
+      className="w-full min-h-[100dvh] py-[30px] bg-cover flex justify-center items-center"
       style={{ backgroundImage: `url(${bg})` }}
       onError={(e) => {
         e.target.style.backgroundImage = 'linear-gradient(to bottom, #000000, #1a1a2e)';
       }}
     >
       <form
-        className="w-[90%] h-[600px] max-w-[500px] bg-[#00000062] backdrop-blur shadow-lg shadow-black flex flex-col items-center justify-center gap-[20px] px-[20px]"
+        className="w-[90%] min-h-[520px] py-[30px] max-w-[500px] bg-[#00000062] backdrop-blur shadow-lg shadow-black flex flex-col items-center justify-center gap-[20px] px-[20px]"
         onSubmit={handleSignUp}
       >
-        <h1 className="text-white text-[30px] font-semibold mb-[30px]">
+        <h1 className="text-white text-[24px] sm:text-[30px] font-semibold mb-[20px] text-center">
           Register to <span className="text-blue-400">Virtual Assistant</span>
         </h1>
 

@@ -59,6 +59,16 @@ function UserContext({ children }) {
     }
   }, []);
 
+  // SPEECH TO TEXT (for browsers without built-in voice recognition)
+  const transcribeAudio = useCallback(async (audio, mimeType) => {
+    const result = await axios.post(
+      `${SERVER_URL}/api/user/transcribe`,
+      { audio, mimeType },
+      { withCredentials: true }
+    );
+    return result.data?.text || "";
+  }, []);
+
   // LOGOUT
   const logout = useCallback(async () => {
     try {
@@ -105,6 +115,7 @@ function UserContext({ children }) {
     selectedImage,
     setSelectedImage,
     getGeminiResponse,
+    transcribeAudio,
     logout
   };
 
